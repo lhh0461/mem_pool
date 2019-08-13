@@ -1,10 +1,25 @@
 #include <stdio.h>
 #include "mem_pool.h"
 
-int main()
+struct user {
+    int age;
+    char name[200];
+    char *ptr;
+};
+
+void test()
 {
-    char * ptr = (char *)memory_alloc(100, __FILE__);
+    struct user * ptr = (struct user *)memory_alloc(sizeof(struct user)*1000, __FILE__);
     if (ptr) {
         printf("malloc\n");
     }
+    ptr->age = 123;
+    dump_memory();
+    memory_free(ptr, sizeof(struct user)*1000);
+    dump_memory();
+}
+
+int main()
+{
+    test();
 }

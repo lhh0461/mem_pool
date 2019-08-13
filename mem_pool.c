@@ -62,6 +62,9 @@ static inline void * new_chunk(int sz)
         return NULL;
     nc->next = NULL;
     nc->chunk_used = sizeof(struct chunk) + sz;
+    if (g_mgr.chunk_head == NULL) {
+        g_mgr.chunk_head = nc;
+    }
     if (g_mgr.chunk_tail) {
         g_mgr.chunk_tail->next = nc;
     }
@@ -129,7 +132,9 @@ static void * alloc_huge_memory(size_t sz)
     if (h == NULL)
         return NULL;
     h->prev = &g_mgr.huge_list;
-    h->next = g_mgr.huge_list.next;
+    if (g_mgr.huge_list) {
+        h->next = g_mgr.huge_list.next;
+    }
     h->sz = sz;
     g_mgr.huge_list.next->prev = h;
     g_mgr.huge_list.next = h;
@@ -315,3 +320,22 @@ void * memory_realloc(void *ptr, size_t osize, size_t nsize)
     }
 }
 
+void dump_memory()
+{
+    for (int i = 0; i < SMALLLEVEL; i++) {
+        struct smallblock *p = g_mgr.small_list[i];
+        int count = 0;
+        while (p) {
+            count++;
+            p = p->next;
+        }
+        if (count > 0) {
+            printf("i=%d,count=%d\n", i, count);
+        }
+    }
+    struct chunk *p = g_mgr.chunk_head;
+    while (p) {
+        printf("chunk_used=%d\n", p->chunk_used);
+        p = p->next;
+    }
+}
